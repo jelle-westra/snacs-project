@@ -99,8 +99,7 @@ def eval(args: argparse.Namespace, model: nn.Module, G: nx.Graph) -> List[float]
     # setup the multi-label target `y`
     y = np.zeros((len(G), n_groups), dtype=np.int32)
     with open('./datasets/BlogCatalog/group-edges.csv', 'r') as handle : 
-        line = handle.readline()
-        while line != '':
+        for line in handle:
             user, group = map(int, line.strip().split(','))
             y[user-1, group-1] = 1
 
