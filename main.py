@@ -28,7 +28,7 @@ def train(
         args: argparse.Namespace, 
         model: nn.Module, 
         optimizer: optim.Optimizer, 
-        scheduler: optim.lr_scheduler.LRScheduler,
+        scheduler: optim.lr_scheduler._LRScheduler,
         walks: torch.Tensor,
         epoch: int, 
         report: List[Dict], 
@@ -99,7 +99,8 @@ def eval(args: argparse.Namespace, model: nn.Module, G: nx.Graph) -> List[float]
     # setup the multi-label target `y`
     y = np.zeros((len(G), n_groups), dtype=np.int32)
     with open('./datasets/BlogCatalog/group-edges.csv', 'r') as handle : 
-        while ((line := handle.readline()) != '') :
+        line = handle.readline()
+        while line != '':
             user, group = map(int, line.strip().split(','))
             y[user-1, group-1] = 1
 
@@ -158,7 +159,8 @@ def main(args: argparse.Namespace) -> List[float]:
     model = SkipGram(len(G.nodes), args.emb_dim).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.alpha)
-    scheduler = optim.lr_scheduler.LinearLR(optimizer, 1., args.alpha_min/args.alpha, args.epochs*len(walks))
+    lambda_lr = lambda epoch: 1. - (epoch / (args.epochs * len(walks))) * (1. - args.alpha_min / args.alpha)
+    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda_lr)
 
     report = []
 
