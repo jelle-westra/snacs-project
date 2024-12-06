@@ -1,3 +1,4 @@
 __pycache__/
 notepad.ipynb
 *.png
+node2vec/emb/*
