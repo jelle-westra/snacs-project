@@ -6,14 +6,13 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn.model_selection import KFold
 from sklearn.metrics import f1_score
 
-
 import os
 import argparse
 from glob import glob
 from tqdm import tqdm
 from typing import Dict, List, Any
 
-import prepare
+from prepare import prepare
 
 # thanks to hermidalc, https://github.com/scikit-learn/scikit-learn/issues/12939
 os.environ["PYTHONWARNINGS"] = "ignore::UserWarning"
@@ -97,6 +96,9 @@ def parse_args():
 if (__name__ == '__main__') : 
     args = parse_args()
 
+    print('Preparing the dataset...')
+    prepare(args.dataset)
+
     G = nx.read_edgelist(f'./node2vec/graph/{args.dataset}.edgelist')
     id2idx = {id: idx for (idx, id) in enumerate(G.nodes())}
 
@@ -106,6 +108,7 @@ if (__name__ == '__main__') :
 
     y = load_labels(f'./node2vec/label/{args.dataset}.lab', id2idx)
 
+    print('Evaluating...')
     for path in paths :
         (p, q) = (float(s[1:]) for s in os.path.basename(os.path.normpath(path))[:-4].split('_'))
         pbar = tqdm(total=len(gammas) + 1, leave=False, desc=f'[p={p:.2f},q={q:.2f}]')
