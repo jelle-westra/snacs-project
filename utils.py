@@ -6,18 +6,7 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn.model_selection import KFold
 from sklearn.metrics import f1_score
 
-
-import os
-import argparse
-from glob import glob
-from tqdm import tqdm
-from typing import Dict, List, Any
-
-import prepare
-
-# thanks to hermidalc, https://github.com/scikit-learn/scikit-learn/issues/12939
-os.environ["PYTHONWARNINGS"] = "ignore::UserWarning"
-
+from typing import Dict, List
 
 def read_file(
     path: str,
@@ -68,7 +57,7 @@ def cross_validate_f1(
     return np.array(f1)
 
 
-def diffuse_embeddings(
+def embeddings_smoothing(
     G: nx.Graph, 
     id2idx: Dict[str, int],
     X: List[List[float]], 
@@ -82,46 +71,3 @@ def diffuse_embeddings(
         for v in G.neighbors(u) : 
             Xprime[id2idx[u]] += gamma*(G.degree(v)/deg_avg)*X[id2idx[v]]
     return Xprime
-
-def parse_args():
-    parser = argparse.ArgumentParser(description='Node Classification')
-    parser.add_argument('--dataset', type=str, default='PPI')
-    parser.add_argument('--gamma-min-order', type=int, default=-6)
-    parser.add_argument('--gamma-max-order', type=int, default=1)
-    parser.add_argument('--gamma-samples', type=int, default=22)
-    parser.add_argument('--folds', type=int, default=10)
-
-    return parser.parse_args()
-
-
-if (__name__ == '__main__') : 
-    args = parse_args()
-
-    G = nx.read_edgelist(f'./node2vec/graph/{args.dataset}.edgelist')
-    id2idx = {id: idx for (idx, id) in enumerate(G.nodes())}
-
-    paths = glob(f'./node2vec/emb/{args.dataset}/*.emb')
-
-    gammas = np.logspace(args.gamma_min_order, args.gamma_max_order, args.gamma_samples)
-
-    y = load_labels(f'./node2vec/label/{args.dataset}.lab', id2idx)
-
-    for path in paths :
-        (p, q) = (float(s[1:]) for s in os.path.basename(os.path.normpath(path))[:-4].split('_'))
-        pbar = tqdm(total=len(gammas) + 1, leave=False, desc=f'[p={p:.2f},q={q:.2f}]')
-
-        X = load_embeddings(paths[0], id2idx)
-        f1 = cross_validate_f1(X, y, folds=args.folds, verbose=False)
-        pbar.update(1)
-
-        f1_diffused = np.zeros((len(gammas), args.folds), dtype=np.float32)
-        for (j, gamma) in enumerate(gammas) :
-            Xprime = diffuse_embeddings(G, id2idx, X, gamma)
-            f1_diffused[j] = cross_validate_f1(Xprime, y, folds=args.folds, verbose=False)
-            pbar.update(1)
-        pbar.close()
-
-        diffused_best = f1_diffused.mean(axis=1).argmax()
-
-        print(f'[p={p:.2f},q={q:.2f}]: base {f1.mean():.4f} | best_gamma {gammas[diffused_best]} | best_diffused : {f1_diffused[diffused_best].mean():.4f}')
-    

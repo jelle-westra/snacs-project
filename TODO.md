@@ -10,6 +10,14 @@ Paper grid searches over $p,q \in \{0.25, 0.50, 1, 2,4\}$ which means $5\times5=
 
 #### BlogCatalog 10k (Jelle laptop)
 
+[p=0.25,q=2.00]: base 0.9680 | best_gamma 2.1544346900318822e-06 | best_diffused : 0.9715                              
+[p=0.25,q=2.00]: base 0.9686 | best_gamma 2.1544346900318822e-06 | best_diffused : 0.9742                              
+[p=0.25,q=2.00]: base 0.9697 | best_gamma 4.641588833612782e-06 | best_diffused : 0.9753                               
+[p=0.25,q=2.00]: base 0.9592 | best_gamma 2.1544346900318822e-06 | best_diffused : 0.9746                              
+[p=0.25,q=2.00]: base 0.9713 | best_gamma 1e-05 | best_diffused : 0.9696                                               
+[p=0.25,q=2.00]: base 0.9705 | best_gamma 4.641588833612772e-05 | best_diffused : 0.9727                               
+[p=0.25,q=2.00]: base 0.9673 | best_gamma 4.641588833612782e-06 | best_diffused : 0.9704
+
 | $p$ \ $q$ | 0.25 | 0.5 | 1 | 2 | 4 |
 |---------|------|-----|---|---|---|
 | 0.25    |      |     |   |   |   |
