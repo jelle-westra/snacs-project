@@ -8,47 +8,39 @@ from sklearn.metrics import f1_score
 
 
 import os
-import warnings
 from glob import glob
 from tqdm import tqdm
-from typing import Dict, List
+from typing import Dict, List, Any
 
 import prepare
 
-from sklearn.exceptions import ConvergenceWarning
-warnings.filterwarnings("ignore", category=ConvergenceWarning)
+# thanks to hermidalc, https://github.com/scikit-learn/scikit-learn/issues/12939
+os.environ["PYTHONWARNINGS"] = "ignore::UserWarning"
 
 
-def load_embeddings(
-    path: str, 
-    id2idx: Dict[str, int]
-) -> List[List[float]] :
+def read_file(
+    path: str,
+    id2idx: Dict[str, int],
+    dtype: type=float
+) -> List[List[float | int]] :
     
     with open(path, 'r') as handle:
         (n, d) = map(int, handle.readline().strip().split())
 
-        embeddings = np.empty((n, d), dtype=np.float32)
+        data = np.empty((n, d), dtype=dtype)
         while (line := handle.readline().strip()):
-            (id, *emb) = line.split()
-            embeddings[id2idx[id]] = list(map(float, emb))
+            (id, *data_field) = line.split()
+            data[id2idx[id]] = list(map(float, data_field))
 
-    return embeddings
+    return data
 
 
-def load_labels(
-    path: str, 
-    id2idx: Dict[str, int]
-) -> List[List[int]] : 
-    
-    with open(path, 'r') as handle:
-        (n, d) = map(int, handle.readline().strip().split())
+def load_embeddings(path: str, id2idx: Dict[str, int]) -> List[List[float]] : 
+    return read_file(path, id2idx, dtype=float)
 
-        labels = np.empty((n, d), dtype=np.int32)
-        while (line := handle.readline().strip()):
-            (id, *emb) = line.split()
-            labels[id2idx[id]] = list(map(int, emb))
 
-    return labels
+def load_labels(path: str, id2idx: Dict[str, int]) -> List[List[int]] : 
+    return read_file(path, id2idx, dtype=int)
 
 
 def cross_validate_f1(
@@ -119,9 +111,7 @@ if (__name__ == '__main__') :
             pbar.update(1)
         pbar.close()
 
-        print(f1.mean(), f1.mean(axis=1))
+        diffused_best = f1_diffused.mean(axis=1).argmax()
 
-        break
-        # comb = path.strip().split('/')[-1]
-        # print(f'[{comb}] {f1.mean():.4f}')
+        print(f'[p={p:.2f},q={q:.2f}]: base {f1.mean():.4f} | best_gamma {gammas[diffused_best]} | best_diffused : {f1_diffused[diffused_best].mean():.4f}')
     
