@@ -126,5 +126,5 @@ if (__name__ == '__main__') :
 
         diffused_best = f1_diffused.mean(axis=1).argmax()
 
-        print(f'[p={p:.2f},q={q:.2f}]: base {f1.mean():.4f} | best_gamma {gammas[diffused_best]} | best_diffused : {f1_diffused[diffused_best].mean():.4f}')
+        print(f'[p={p:.2f},q={q:.2f}]: base {f1.mean():.4f} | best_gamma {gammas[diffused_best]} | best_diffused {f1_diffused[diffused_best].mean():.4f}')
     
