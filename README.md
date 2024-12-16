@@ -1,3 +1,5 @@
+This repo is written as part of the course: Social Network Analysis for Computer Science at Leiden University fall semester of 2024.
+
 # Feature Smoothing Node2Vec
 In Node2Vec numerical vector representations (embeddings) are learned
 by using random walks on the graph. Doing this results in embeddings
