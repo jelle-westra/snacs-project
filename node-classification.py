@@ -13,34 +13,10 @@ from tqdm import tqdm
 from typing import Dict, List, Any
 
 from prepare import prepare
+from utils import load_embeddings, load_labels, embeddings_smoothing
 
 # thanks to hermidalc, https://github.com/scikit-learn/scikit-learn/issues/12939
 os.environ["PYTHONWARNINGS"] = "ignore::UserWarning"
-
-
-def read_file(
-    path: str,
-    id2idx: Dict[str, int],
-    dtype: type=float
-) -> List[List[float | int]] :
-    
-    with open(path, 'r') as handle:
-        (n, d) = map(int, handle.readline().strip().split())
-
-        data = np.empty((n, d), dtype=dtype)
-        while (line := handle.readline().strip()):
-            (id, *data_field) = line.split()
-            data[id2idx[id]] = list(map(float, data_field))
-
-    return data
-
-
-def load_embeddings(path: str, id2idx: Dict[str, int]) -> List[List[float]] : 
-    return read_file(path, id2idx, dtype=float)
-
-
-def load_labels(path: str, id2idx: Dict[str, int]) -> List[List[int]] : 
-    return read_file(path, id2idx, dtype=int)
 
 
 def cross_validate_f1(
@@ -66,21 +42,6 @@ def cross_validate_f1(
     if (verbose) : print(f'mean: {np.mean(f1):.5f}')
     return np.array(f1)
 
-
-def diffuse_embeddings(
-    G: nx.Graph, 
-    id2idx: Dict[str, int],
-    X: List[List[float]], 
-    gamma=0.05
-) -> List[List[float]] :
-    # diffusing the learned embeddings based on their neighbors
-    deg_avg = sum(d for (n, d) in G.degree()) / G.number_of_nodes()
-
-    Xprime = X.copy()
-    for u in G.nodes() : 
-        for v in G.neighbors(u) : 
-            Xprime[id2idx[u]] += gamma*(G.degree(v)/deg_avg)*X[id2idx[v]]
-    return Xprime
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Node Classification')
@@ -119,7 +80,7 @@ if (__name__ == '__main__') :
 
         f1_diffused = np.zeros((len(gammas), args.folds), dtype=np.float32)
         for (j, gamma) in enumerate(gammas) :
-            Xprime = diffuse_embeddings(G, id2idx, X, gamma)
+            Xprime = embeddings_smoothing(G, id2idx, X, gamma)
             f1_diffused[j] = cross_validate_f1(Xprime, y, folds=args.folds, verbose=False)
             pbar.update(1)
         pbar.close()

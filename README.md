@@ -1,12 +1,12 @@
-# Diffusing Node2Vec
+# Feature Smoothing Node2Vec
 In Node2Vec numerical vector representations (embeddings) are learned
 by using random walks on the graph. Doing this results in embeddings
 that capture numerical features of the strucutre of the graph and 
 node's pressence within communities such that they can be used in 
 machine learning tasks. 
 
-To test these embeddings we perform multi-label classification on 
-purely based on their embeddings.
+To test these embeddings we perform multi-label classification and 
+link prediction based on their embeddings.
 
 We propose an updating rule for diffusing information to neighbors
 by doing a smooth update of the embeddings based on the embeddings of 
@@ -18,19 +18,32 @@ direct neigbors.
 # Files
 ```
 snacs-project/
-    datasets/
-        BlogCatalog/
-            edges.csv               Edgelist: (User1, User2)
-            group-edges.csv         Classes: (User, Group)
-            groups.csv              Class indices
-            nodes.csv               Node indices
-        PPI/
-            Homo_sapiens.mat        MATLAB data file containing: Adjacency Matrix, and node classes
-    node2vec/                       Node2Vec source code; check readme in there
-    BlogCatalog.ipynb               Analysis of the BlogCatalog dataset
-    PPI.ipynb                       Analysis of the PPI dataset
+    datasets/                       Raw datasets that are prepared in `prepare.py`
+    node2vec/                       Forked Node2Vec source code; check readme in there
+    results/                        Results of the node classification grid search
+    analysis.ipynb                  Analysis of node classification grid search
     demo.ipynb                      Demo notebook as used in the presentation to explain Node2Vec
+    link-prediction.py              Classification of links
+    node-classification.py          Classification of nodes
+    prepare.py                      Preparation of raw datasets to be used in `./node2vec/`
+    utils.py                        Utility functions for loading/preparing embeddings 
 ```
+
+# How to use
+The preparation of the datasets needs to be ran only once.
+This prepares the raw datasets (from different formats) to 
+the expected format of the original `./node2vec/` implementation.
+
+After preparation of the datasets embeddings can be generated using
+the original Node2Vec source code. Note a couple of adjustments
+have been made to make the code compatible in Python 3. See the
+readme in `./node2vec/` to see how to run the training of the 
+embeddings.
+
+After training embeddings for required (p,q) combinations
+analysis can be done for smoothing embeddings for the node classification
+task using `node-classification.py` and `link-predcition.py` for
+link prediction.
 
 # Installation
 
