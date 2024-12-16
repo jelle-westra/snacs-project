@@ -1,0 +1,1 @@
+[p=1.00,q=1.00]: base 0.9607 | best_gamma 1.000e-03 | best_smoothed 0.9628
